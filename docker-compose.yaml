@@ -3,13 +3,18 @@ version: "3.8"
 
 # Define all services (containers)
 services:
+  mongo:
+    # Use official mongoDB image
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
   # Backend service
-  backend:
+  expressjs:
     # Build the docker image from the dockerfile in the current dir
     build: .
-
-    # Set custom container name
-    container_name: brainbytes-server
 
     # Map port 8000 inside the container to port 8000 on the host machine
     ports:
@@ -30,17 +35,6 @@ services:
     command: pnpm start
 
   # MongoDB service
-  mongo:
-    # Use official mongoDB image
-    image: mongo:latest
-
-    container_name: brainbytes-db
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-
-    volumes:
-      - mongo-data:/data/db
 
 volumes:
   mongo-data:
