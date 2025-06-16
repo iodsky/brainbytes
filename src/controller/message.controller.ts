@@ -13,18 +13,18 @@ export const createMessage = async (req: AuthRequest, res: Response) => {
     const chatId = req.params.chatId as string;
 
     if (!Types.ObjectId.isValid(chatId)) {
-      HTTPResponse.error(res, 400, "Invalid chat ID format");
+      HTTPResponse.badRequest(res, "Invalid chat ID format");
       return;
     }
 
     if (!prompt) {
-      HTTPResponse.error(res, 400, "Empty prompt or invalid prompt");
+      HTTPResponse.badRequest(res, "Empty prompt or invalid prompt");
       return;
     }
 
     const chat = await Chat.findById(chatId);
     if (!chat) {
-      HTTPResponse.error(res, 404, `Chat not found for id ${chatId}`);
+      HTTPResponse.notFound(res, `Chat not found for id ${chatId}`);
       return;
     }
 
@@ -48,7 +48,7 @@ export const createMessage = async (req: AuthRequest, res: Response) => {
     });
 
     if (!ai) {
-      HTTPResponse.error(res, 500, "Failed to generate response");
+      HTTPResponse.internalServerError(res, "Failed to generate response");
       return;
     }
 
@@ -60,14 +60,18 @@ export const createMessage = async (req: AuthRequest, res: Response) => {
     });
 
     if (!message) {
-      HTTPResponse.error(res, 500, "Failed to create message");
+      HTTPResponse.internalServerError(res, "Failed to create message");
       return;
     }
 
-    HTTPResponse.success(res, 201, "Message successfully created", message);
+    HTTPResponse.created(res, "Message successfully created", message);
   } catch (error) {
     console.log(error);
-    HTTPResponse.error(res, 500, "An unexpected error has occurred", error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occurred",
+      error
+    );
   }
 };
 
@@ -87,6 +91,11 @@ export const getMessagesByChatId = async (req: AuthRequest, res: Response) => {
       data: messages,
     });
   } catch (error: any) {
-    HTTPResponse.error(res, 500, "An unexpected error has occurred", error);
+    console.log(error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occurred",
+      error
+    );
   }
 };

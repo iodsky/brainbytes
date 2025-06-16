@@ -12,11 +12,7 @@ export const registerUser = async (req: Request, res: Response) => {
     // Check if user exits
     const userExists = await User.findOne({ email });
     if (userExists) {
-      HTTPResponse.error(
-        res,
-        409,
-        "An account with this email already exists."
-      );
+      HTTPResponse.conflict(res, "An account with this email already exists.");
       return;
     }
 
@@ -41,10 +37,14 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     // return success response
-    HTTPResponse.success(res, 201, "User resgistration success", user);
+    HTTPResponse.created(res, "User resgistration success", user);
   } catch (error) {
     console.error(error);
-    HTTPResponse.error(res, 500, "An unexpected error has occurred", error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occurred",
+      error
+    );
   }
 };
 
@@ -54,19 +54,19 @@ export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      HTTPResponse.error(res, 400, "Email and password required");
+      HTTPResponse.badRequest(res, "Email and password required");
       return;
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      HTTPResponse.error(res, 404, "User with this email does not exist.");
+      HTTPResponse.notFound(res, "User with this email does not exist.");
       return;
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      HTTPResponse.error(res, 400, "Incorrect password");
+      HTTPResponse.badRequest(res, "Incorrect password");
       return;
     }
 
@@ -84,10 +84,14 @@ export const loginUser = async (req: Request, res: Response) => {
     });
 
     // return success response
-    HTTPResponse.success(res, 200, "Login success");
+    HTTPResponse.ok(res, "Login success");
   } catch (error: any) {
     console.error(error);
-    HTTPResponse.error(res, 500, "An unexpected error has occurred", error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occurred",
+      error
+    );
   }
 };
 
@@ -97,5 +101,5 @@ export const logoutUser = async (req: Request, res: Response) => {
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
-  HTTPResponse.success(res, 200, "Logged out successfully");
+  HTTPResponse.ok(res, "Logout success");
 };

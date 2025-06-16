@@ -12,7 +12,7 @@ export const createChat = async (req: AuthRequest, res: Response) => {
     const templateType: TemplateValue = template || Template.TUTOR;
 
     if (!prompt) {
-      HTTPResponse.error(res, 400, "Empty prompt");
+      HTTPResponse.badRequest(res, "Empty prompt");
       return;
     }
 
@@ -30,7 +30,7 @@ export const createChat = async (req: AuthRequest, res: Response) => {
 
     if (!chatMetaData) {
       console.error("Failed to generate chat metadata");
-      HTTPResponse.error(res, 500, "Failed to generate chat metadata");
+      HTTPResponse.internalServerError(res, "Failed to generate chat metadata");
       return;
     }
 
@@ -41,7 +41,7 @@ export const createChat = async (req: AuthRequest, res: Response) => {
 
     if (!Chat) {
       console.error("Failed to create Chat");
-      HTTPResponse.error(res, 500, "Failed to create chat");
+      HTTPResponse.internalServerError(res, "Failed to create chat");
       return;
     }
 
@@ -58,13 +58,17 @@ export const createChat = async (req: AuthRequest, res: Response) => {
       response: parsed.response,
     });
 
-    HTTPResponse.success(res, 201, "Chat successfully created", [
-      chat,
-      message,
-    ]);
+    HTTPResponse.created(res, "Chat successfully created", {
+      chat: chat,
+      message: message,
+    });
   } catch (error) {
     console.error(error);
-    HTTPResponse.error(res, 500, "An unexpected error has occured.", error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occured.",
+      error
+    );
   }
 };
 
@@ -76,10 +80,14 @@ export const getUserChat = async (req: AuthRequest, res: Response) => {
       createdAt: -1,
     });
 
-    HTTPResponse.success(res, 200, "Chat successfully retrieved", result);
+    HTTPResponse.ok(res, "Chat successfully retrieved", result);
   } catch (error) {
     console.error(error);
-    HTTPResponse.error(res, 500, "An unexpcted error has occured", error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpcted error has occured",
+      error
+    );
   }
 };
 
@@ -90,20 +98,27 @@ export const deleteChat = async (req: AuthRequest, res: Response) => {
 
     const toDelete = await Chat.findById(id);
     if (!toDelete) {
-      HTTPResponse.error(res, 404, `Chat not found for id: ${id}`);
+      HTTPResponse.notFound(res, `Chat not found for id: ${id}`);
       return;
     }
 
     if (String(toDelete.user) !== userId) {
-      HTTPResponse.error(res, 401, "You are unauthorized to delete this chat");
+      HTTPResponse.unauthorized(
+        res,
+        "You are unauthorized to delete this chat"
+      );
       return;
     }
 
     await toDelete.deleteOne();
-    HTTPResponse.success(res, 200, "Chat successfully deleted");
+    HTTPResponse.ok(res, "Chat successfully deleted");
   } catch (error) {
     console.error(error);
-    HTTPResponse.error(res, 500, "An unexpected error has occurred", error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occurred",
+      error
+    );
   }
 };
 
@@ -114,33 +129,37 @@ export const updateChat = async (req: AuthRequest, res: Response) => {
     const title = req.body?.title;
 
     if (!title) {
-      HTTPResponse.error(res, 400, "Please provided chat title");
+      HTTPResponse.badRequest(res, "Please provided chat title");
       return;
     }
 
     const toUpdate = await Chat.findById(id);
 
     if (!toUpdate) {
-      HTTPResponse.error(res, 404, `Chat not found for id ${id}`);
+      HTTPResponse.notFound(res, `Chat not found for id ${id}`);
       return;
     }
 
     if (String(toUpdate.user) !== userId) {
-      HTTPResponse.error(res, 401, `You are authorized to update this chat`);
+      HTTPResponse.unauthorized(res, "You are authorized to update this chat");
       return;
     }
 
     if (toUpdate.title === title) {
-      HTTPResponse.success(res, 200, `Chat details are up to date.`);
+      HTTPResponse.ok(res, "Chat details are up to date");
       return;
     }
 
     toUpdate.title = title;
     await toUpdate.save();
 
-    HTTPResponse.success(res, 200, `Chat title successfully update`, toUpdate);
+    HTTPResponse.ok(res, "Chat title successfully update", toUpdate);
   } catch (error) {
     console.error(error);
-    HTTPResponse.error(res, 500, "An unexpected error has occurred", error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occurred",
+      error
+    );
   }
 };
