@@ -33,7 +33,6 @@ app.use("/message", authenticateToken, messageRoutes);
 // Connect DB and start server
 const initServer = async () => {
   await connectDB();
-  await flushDB();
 
   app.listen(PORT, () => {
     console.log(`👍 Server running on port ${PORT}`);
