@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { AuthRequest } from "../types/auth-request";
+import { HTTPResponse } from "../util/http-response";
 
 export const authenticateToken = async (
   req: AuthRequest,
@@ -9,7 +10,7 @@ export const authenticateToken = async (
 ) => {
   const token = req.cookies.token;
   if (!token) {
-    res.status(401).json({ success: false, message: "No token provided" });
+    HTTPResponse.error(res, 401, "No token provided in cookies.");
     return;
   }
 
@@ -19,9 +20,20 @@ export const authenticateToken = async (
     };
     req.userId = decoded.userId;
     next();
-  } catch (err) {
-    res
-      .status(403)
-      .json({ success: false, message: "Invalid or expired token" });
+  } catch (err: any) {
+    const isExpired = err.name === "TokenExpiredError";
+    const isInvalid = err.name === "JsonWebTokenError";
+
+    if (isExpired) {
+      HTTPResponse.error(res, 403, "Token has expired.");
+      return;
+    }
+
+    if (isInvalid) {
+      HTTPResponse.error(res, 403, "Invalid token");
+      return;
+    }
+
+    HTTPResponse.error(res, 403, "Unable to verify token");
   }
 };
