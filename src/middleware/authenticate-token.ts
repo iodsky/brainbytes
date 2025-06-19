@@ -20,18 +20,17 @@ export const authenticateToken = async (
     };
     req.userId = decoded.userId;
     next();
-  } catch (err: any) {
-    const isExpired = err.name === "TokenExpiredError";
-    const isInvalid = err.name === "JsonWebTokenError";
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      if (err.name === "TokenExpiredError") {
+        HTTPResponse.forbidden(res, "Token has expired.");
+        return;
+      }
 
-    if (isExpired) {
-      HTTPResponse.forbidden(res, "Token has expired.");
-      return;
-    }
-
-    if (isInvalid) {
-      HTTPResponse.forbidden(res, "Invalid token");
-      return;
+      if (err.name === "JsonWebTokenError") {
+        HTTPResponse.forbidden(res, "Invalid token");
+        return;
+      }
     }
 
     HTTPResponse.forbidden(res, "Unable to verify token");
