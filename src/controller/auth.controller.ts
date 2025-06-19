@@ -85,7 +85,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
     // return success response
     HTTPResponse.ok(res, "Login success");
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
     HTTPResponse.internalServerError(
       res,
