@@ -110,7 +110,7 @@ export const deleteChat = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    await toDelete.deleteOne();
+    await Chat.findOneAndDelete({ _id: id });
     HTTPResponse.ok(res, "Chat successfully deleted");
   } catch (error) {
     console.error(error);
