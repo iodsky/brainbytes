@@ -1,7 +1,7 @@
 import { Response } from "express";
 
 export const HTTPResponse = {
-  ok<T>(res: Response, message: string, data?: T) {
+  ok<T>(res: Response, message?: string, data?: T) {
     return res.status(200).json({
       success: true,
       message,
@@ -9,7 +9,7 @@ export const HTTPResponse = {
     });
   },
 
-  created<T>(res: Response, message: string, data?: T) {
+  created<T>(res: Response, message?: string, data?: T) {
     return res.status(201).json({
       success: true,
       message,
