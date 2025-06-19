@@ -85,12 +85,12 @@ export const getMessagesByChatId = async (req: AuthRequest, res: Response) => {
       })
       .lean();
 
-    res.status(200).json({
-      success: true,
-      message: `messages found for chatId ${chatId}`,
-      data: messages,
-    });
-  } catch (error: any) {
+    if (!messages || messages.length === 0) {
+      HTTPResponse.notFound(res, `No message found for chatId ${chatId}`);
+    }
+
+    HTTPResponse.ok(res, `Messages found for chatId ${chatId}`, messages);
+  } catch (error: unknown) {
     console.log(error);
     HTTPResponse.internalServerError(
       res,
