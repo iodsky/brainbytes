@@ -12,15 +12,12 @@ export const registerUser = async (req: Request, res: Response) => {
     // Check if user exits
     const userExists = await User.findOne({ email });
     if (userExists) {
-      HTTPResponse.conflict(res, "An account with this email already exists.");
+      HTTPResponse.conflict(res, "User already exists");
       return;
     }
 
-    // Hash password
-    const hashed = await bcrypt.hash(password, 10);
-
     // create and save user
-    const user = new User({ firstName, lastName, email, password: hashed });
+    const user = new User({ firstName, lastName, email, password });
     await user.save();
 
     // create jwt
@@ -60,7 +57,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      HTTPResponse.notFound(res, "User with this email does not exist.");
+      HTTPResponse.notFound(res, "User not found");
       return;
     }
 
