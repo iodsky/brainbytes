@@ -1,22 +1,22 @@
 import mongoose from "mongoose";
 
 export const connectDB = async () => {
-  const isDockerized = process.env.IS_DOCKERIZED === "true";
+  const IS_DOCKERIZED = process.env.IS_DOCKERIZED === "true";
 
-  const mongoUri = isDockerized
-    ? process.env.MONGO_DOCKER_URI
-    : process.env.MONGO_ATLAS_URI;
+  const MONGO_URI = IS_DOCKERIZED
+    ? process.env.MONGO_URI_DOCKER
+    : process.env.MONGO_URI_ATLAS;
 
   try {
     console.debug(
       `${
-        isDockerized
-          ? "ℹ️  Initializing local mongodb"
-          : "ℹ️  Initializing mongodb atlas"
+        IS_DOCKERIZED
+          ? "ℹ️  Connecting to containerized mongodb"
+          : "ℹ️  Connecting to mongodb atlas"
       }`
     );
-    await mongoose.connect(mongoUri!);
-    console.log("✅ Database connection established");
+    await mongoose.connect(MONGO_URI!);
+    console.log(`✅ Successfully connected to ${MONGO_URI}`);
   } catch (err) {
     console.error("👎 MongoDB connection error:", err);
     process.exit(1);
