@@ -1,2 +1,6 @@
-export const preset = "ts-jest";
-export const testEnvironment = "node";
+export default {
+  preset: "ts-jest",
+  testEnvironment: "node",
+  testMatch: ["**/test/**/*test.ts"],
+  testPathIgnorePatterns: ["/node_modules"],
+};
