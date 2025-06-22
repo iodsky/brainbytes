@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import { connectDatabase, closeDatabase, clearDatabase } from "../util/test-db";
 import User from "../../model/user.model";
 import request from "supertest";
 import app from "../../app";
@@ -28,15 +28,15 @@ const postLogin = async (overrides = {}) => {
 
 describe("/auth", () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI_TEST!);
+    await connectDatabase();
   });
 
   beforeEach(async () => {
-    await User.deleteMany({});
+    await clearDatabase();
   });
 
   afterAll(async () => {
-    await mongoose.connection.close();
+    await closeDatabase();
   });
 
   // Missing fields
