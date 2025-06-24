@@ -4,12 +4,15 @@ import { AuthRequest } from "../types/auth-request";
 import { HTTPResponse } from "../util/http-response";
 import Chat from "../model/chat.model";
 import { Template, TemplateValue } from "../service/template-config";
-import { ConversationHistory, promptService } from "../service/prompt-service";
+import {
+  ConversationHistory,
+  generateResponse,
+} from "../service/prompt-service";
 import { Types } from "mongoose";
 
 export const createMessage = async (req: AuthRequest, res: Response) => {
   try {
-    const { prompt, attachmentsUrls, template } = req.body;
+    const { prompt, attachmentUrls, template } = req.body;
     const chatId = req.params.chatId as string;
 
     if (!Types.ObjectId.isValid(chatId)) {
@@ -40,9 +43,9 @@ export const createMessage = async (req: AuthRequest, res: Response) => {
       };
     });
 
-    const ai = await promptService.build().generateResponse({
-      userInput: prompt,
-      attachmentsUrls: attachmentsUrls,
+    const ai = await generateResponse({
+      prompt: prompt,
+      attachmentUrls: attachmentUrls,
       template: templateType,
       history: history,
     });
