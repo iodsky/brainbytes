@@ -5,7 +5,12 @@ import { GeminiConfig } from "../templates/gemini-configs";
 const BASE_MODEL = "gemini-2.0-flash";
 
 export class GeminiLLM implements GenAI {
-  async invoke({ prompt, attachmentUrls, template, history }: ConvoGenParam) {
+  async invoke({
+    prompt,
+    attachmentUrls = [],
+    template,
+    history,
+  }: ConvoGenParam) {
     const client = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
 
     const attachments = await Promise.all(
