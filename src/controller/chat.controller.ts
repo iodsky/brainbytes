@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { AuthRequest } from "../types/auth-request";
-import { promptService } from "../service/prompt-service";
+import { generateResponse } from "../service/prompt-service";
 import { Template, TemplateValue } from "../service/template-config";
 import Message from "../model/message.model";
 import Chat from "../model/chat.model";
@@ -16,8 +16,8 @@ export const createChat = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const chatMetaDataGenerator = await promptService.build().generateResponse({
-      userInput: String(prompt),
+    const chatMetaDataGenerator = await generateResponse({
+      prompt: String(prompt),
       template: Template.GENERATE_TITLE,
     });
 
@@ -45,9 +45,9 @@ export const createChat = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const ai = await promptService.build().generateResponse({
-      userInput: prompt,
-      attachmentsUrls: attachmentUrls,
+    const ai = await generateResponse({
+      prompt: prompt,
+      attachmentUrls: attachmentUrls,
       template: templateType,
     });
 
