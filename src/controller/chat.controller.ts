@@ -5,6 +5,7 @@ import { Template, TemplateValue } from "../service/template-config";
 import Message from "../model/message.model";
 import Chat from "../model/chat.model";
 import { HTTPResponse } from "../util/http-response";
+import logger from "../util/logger";
 
 export const createChat = async (req: AuthRequest, res: Response) => {
   try {
@@ -21,15 +22,10 @@ export const createChat = async (req: AuthRequest, res: Response) => {
       template: Template.GENERATE_TITLE,
     });
 
-    console.info(
-      `AI response: ${JSON.stringify(chatMetaDataGenerator.response)}`
-    );
-
     const chatMetaData = JSON.parse(chatMetaDataGenerator.text!);
-    console.log("Chat MetaData: ", chatMetaData);
 
     if (!chatMetaData) {
-      console.error("Failed to generate chat metadata");
+      logger.error("Failed to generate chat metadata");
       HTTPResponse.internalServerError(res, "Failed to generate chat metadata");
       return;
     }
@@ -40,7 +36,7 @@ export const createChat = async (req: AuthRequest, res: Response) => {
     });
 
     if (!Chat) {
-      console.error("Failed to create Chat");
+      logger.error("Failed to create Chat");
       HTTPResponse.internalServerError(res, "Failed to create chat");
       return;
     }
@@ -63,7 +59,7 @@ export const createChat = async (req: AuthRequest, res: Response) => {
       message: message,
     });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     HTTPResponse.internalServerError(
       res,
       "An unexpected error has occured.",
@@ -82,7 +78,7 @@ export const getUserChat = async (req: AuthRequest, res: Response) => {
 
     HTTPResponse.ok(res, "Chat successfully retrieved", result);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     HTTPResponse.internalServerError(
       res,
       "An unexpcted error has occured",
@@ -113,7 +109,7 @@ export const deleteChat = async (req: AuthRequest, res: Response) => {
     await Chat.findOneAndDelete({ _id: id });
     HTTPResponse.ok(res, "Chat successfully deleted");
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     HTTPResponse.internalServerError(
       res,
       "An unexpected error has occurred",
@@ -155,7 +151,7 @@ export const updateChat = async (req: AuthRequest, res: Response) => {
 
     HTTPResponse.ok(res, "Chat title successfully update", toUpdate);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     HTTPResponse.internalServerError(
       res,
       "An unexpected error has occurred",

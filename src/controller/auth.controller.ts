@@ -3,6 +3,7 @@ import User from "../model/user.model";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { HTTPResponse } from "../util/http-response";
+import logger from "../util/logger";
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
@@ -36,7 +37,7 @@ export const registerUser = async (req: Request, res: Response) => {
     // return success response
     HTTPResponse.created(res, "User resgistration success", user);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     HTTPResponse.internalServerError(
       res,
       "An unexpected error has occurred",
@@ -83,7 +84,7 @@ export const loginUser = async (req: Request, res: Response) => {
     // return success response
     HTTPResponse.ok(res, "Login success");
   } catch (error: unknown) {
-    console.error(error);
+    logger.error(error);
     HTTPResponse.internalServerError(
       res,
       "An unexpected error has occurred",

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import logger from "./logger";
 
 export const connectDB = async () => {
   const IS_DOCKERIZED = process.env.IS_DOCKERIZED === "true";
@@ -8,17 +9,17 @@ export const connectDB = async () => {
     : process.env.MONGO_URI_ATLAS;
 
   try {
-    console.debug(
+    logger.info(
       `${
         IS_DOCKERIZED
-          ? "ℹ️  Connecting to containerized mongodb"
-          : "ℹ️  Connecting to mongodb atlas"
+          ? "Connecting to containerized mongodb"
+          : "Connecting to mongodb atlas"
       }`
     );
     await mongoose.connect(MONGO_URI!);
-    console.log(`✅ Successfully connected to ${MONGO_URI}`);
+    logger.info(`Successfully connected to ${MONGO_URI}`);
   } catch (err) {
-    console.error("👎 MongoDB connection error:", err);
+    logger.error(`Error connecting to ${MONGO_URI}`, err);
     process.exit(1);
   }
 };

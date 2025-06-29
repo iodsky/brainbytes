@@ -9,6 +9,7 @@ import {
   generateResponse,
 } from "../service/prompt-service";
 import { Types } from "mongoose";
+import logger from "../util/logger";
 
 export const createMessage = async (req: AuthRequest, res: Response) => {
   try {
@@ -69,12 +70,8 @@ export const createMessage = async (req: AuthRequest, res: Response) => {
 
     HTTPResponse.created(res, "Message successfully created", message);
   } catch (error) {
-    console.log(error);
-    HTTPResponse.internalServerError(
-      res,
-      "An unexpected error has occurred",
-      error
-    );
+    logger.error(error);
+    HTTPResponse.internalServerError(res, "An unexpected error has occurred");
   }
 };
 
@@ -93,12 +90,8 @@ export const getMessagesByChatId = async (req: AuthRequest, res: Response) => {
     }
 
     HTTPResponse.ok(res, `Messages found for chatId ${chatId}`, messages);
-  } catch (error: unknown) {
-    console.log(error);
-    HTTPResponse.internalServerError(
-      res,
-      "An unexpected error has occurred",
-      error
-    );
+  } catch (error) {
+    logger.error(error);
+    HTTPResponse.internalServerError(res, "An unexpected error has occurred");
   }
 };

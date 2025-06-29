@@ -1,5 +1,6 @@
 import app from "./app";
 import { connectDB } from "./util/database";
+import logger from "./util/logger";
 
 const PORT = process.env.PORT || 8000;
 
@@ -8,7 +9,7 @@ const initServer = async () => {
   await connectDB();
 
   app.listen(PORT, () => {
-    console.log(`👍 Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
   });
 };
 

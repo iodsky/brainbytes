@@ -1,3 +1,4 @@
+import logger from "../util/logger";
 import { ConvoGenParam, GenAI, LLM } from "./llm-service";
 import {
   Template,
@@ -15,17 +16,15 @@ export async function generateResponse<T extends TemplateValue>(
   llm: GenAI = LLM.GEMINI
 ) {
   if (!prompt) {
-    console.warn(
-      "PromptResponseGenerator: generateResponse called without user input"
-    );
+    logger.warn("[prompt-service] generateResponse called without user input");
     throw new Error("User input is required");
   }
 
-  console.info(`[prompt-service] Generating response for prompt: ${prompt}`);
-  console.debug(
-    `Attachments: ${JSON.stringify(
+  logger.info(`[prompt-service] generating response for prompt: ${prompt}`);
+  logger.info(
+    `[prompt-service] attachments: ${JSON.stringify(
       attachmentUrls
-    )}, Template: ${template}, History length: ${history?.length || 0}`
+    )}, template: ${template}, history length: ${history?.length || 0}`
   );
 
   try {
@@ -36,13 +35,12 @@ export async function generateResponse<T extends TemplateValue>(
       history: history || [],
     });
 
-    console.info("[prompt-service] Returning text response: ", response.text);
     return {
       text: response?.text,
       image: "",
     };
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     return {
       response: JSON.parse(
         JSON.stringify({ error: "Failed to generate response" })

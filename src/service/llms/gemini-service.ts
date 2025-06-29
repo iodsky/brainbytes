@@ -1,6 +1,7 @@
 import { createPartFromUri, GoogleGenAI } from "@google/genai";
 import { ConvoGenParam, GenAI } from "../llm-service";
 import { GeminiConfig } from "../templates/gemini-configs";
+import logger from "../../util/logger";
 
 const BASE_MODEL = "gemini-2.0-flash";
 
@@ -22,7 +23,7 @@ export class GeminiLLM implements GenAI {
         try {
           return await client.files.upload({ file: url });
         } catch (err) {
-          console.error(
+          logger.error(
             `Error fetching or uploading file from URL: ${url}`,
             err
           );
@@ -62,7 +63,7 @@ export class GeminiLLM implements GenAI {
         ],
       })
       .catch((error) => {
-        console.error(`[gemini-sercice] Error generating response: `, error);
+        logger.error(`[gemini-sercice] Error generating response: ${error}`);
         return null;
       });
 
@@ -70,8 +71,7 @@ export class GeminiLLM implements GenAI {
       return { text: "", image: "" };
     }
 
-    console.info("[gemini-service] Generated response: " + geminiResponse.text);
-
+    logger.info(`[gemini-service] generated response: ${geminiResponse.text}`);
     return {
       text: geminiResponse?.text?.trim() || "",
       image: "",
