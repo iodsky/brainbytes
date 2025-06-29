@@ -20,8 +20,7 @@ export const GeminiConfig: TemplateTypeConfig<GenerateContentConfig> = {
     maxOutputTokens: 128,
     temperature: 0.8,
     systemInstruction:
-      AI_TUTOR_INSTRUCTION +
-      "For this task you are expcted to generated a title / name (short and catchy) for the following text. And choose the right topic.",
+      "For this task you are expcted to generate a title or name (short and catchy) for the following text. And categorize the text based on the subject.",
     responseMimeType: "application/json",
     responseSchema: {
       type: Type.OBJECT,
