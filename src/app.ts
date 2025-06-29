@@ -9,6 +9,7 @@ import messageRoutes from "./routes/message.routes";
 import { HTTPResponse } from "./util/http-response";
 import { authenticateToken } from "./middleware/authenticate-token";
 import { Request, Response } from "express";
+import httpLogger from "./middleware/httpLogger";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ if (process.env.ENABLE_CORS === "true") {
   );
 }
 app.use(cookieParser());
+app.use(httpLogger);
 
 // Routes
 app.get("/health", (_req: Request, res: Response) => {
