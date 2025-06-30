@@ -11,10 +11,15 @@ export interface ConversationHistory {
   response: string;
 }
 
+export interface PromptResponse<T extends TemplateValue> {
+  response: TemplateResponseMap[T];
+  image: string;
+}
+
 export async function generateResponse<T extends TemplateValue>(
   { prompt, attachmentUrls, template, history }: ConvoGenParam,
   llm: GenAI = LLM.GEMINI
-) {
+): Promise<PromptResponse<T>> {
   if (!prompt) {
     logger.warn("[prompt-service] generateResponse called without user input");
     throw new Error("User input is required");
@@ -28,7 +33,7 @@ export async function generateResponse<T extends TemplateValue>(
   );
 
   try {
-    const response = await llm.invoke({
+    const llmResponse = await llm.invoke({
       prompt: prompt,
       attachmentUrls: attachmentUrls ?? [],
       template: template || Template.DEFAULT,
@@ -36,7 +41,7 @@ export async function generateResponse<T extends TemplateValue>(
     });
 
     return {
-      text: response?.text,
+      response: JSON.parse(llmResponse.text),
       image: "",
     };
   } catch (error) {
