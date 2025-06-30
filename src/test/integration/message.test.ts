@@ -4,6 +4,7 @@ import { clearDatabase, closeDatabase, connectDatabase } from "../util/test-db";
 import User, { IUser } from "../../model/user.model";
 import Chat, { IChat, Subject } from "../../model/chat.model";
 import * as promptService from "../../service/prompt-service";
+import { PromptResponse } from "../../service/prompt-service";
 
 const testUser = {
   firstName: "Test",
@@ -12,8 +13,10 @@ const testUser = {
   password: "testpassword",
 };
 
-const mockResponse = {
-  text: JSON.stringify({ response: "2" }),
+const mockResponse: PromptResponse<"default"> = {
+  response: {
+    response: "Mock response",
+  },
   image: "",
 };
 
@@ -60,8 +63,8 @@ describe("/message", () => {
     expect(res.body.success).toEqual(true);
     expect(res.body.data).toBeDefined();
     expect(res.body.data.chat).toEqual(testChat.id);
-    expect(res.body.data.response).toEqual(
-      JSON.parse(mockResponse.text).response
+    expect(res.body.data.json_response.response).toEqual(
+      mockResponse.response.response
     );
   });
 

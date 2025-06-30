@@ -4,6 +4,7 @@ import request from "supertest";
 import User, { IUser } from "../../model/user.model";
 import * as promptService from "../../service/prompt-service";
 import Chat, { Subject } from "../../model/chat.model";
+import { PromptResponse } from "../../service/prompt-service";
 
 const testUser = {
   firstName: "Test",
@@ -12,19 +13,19 @@ const testUser = {
   password: "testpassword",
 };
 
-const mockChatMetaData = {
-  text: JSON.stringify({
-    title: "Mock Title",
-    subject: Subject.GENERAL_KNOWLEDGE,
-  }),
+const mockChatMetaData: PromptResponse<"generate_title"> = {
+  response: {
+    title: "Mock title",
+    subject: Subject.SCIENCE,
+  },
   image: "",
 };
 
-const mockResponse = {
-  text: JSON.stringify({
+const mockResponse: PromptResponse<"tutor"> = {
+  response: {
     response:
       "Photosynthesis is the process by which plants use sunlight, water, and carbon dioxide to create oxygen and energy in the form of sugar.",
-  }),
+  },
   image: "",
 };
 
@@ -76,10 +77,12 @@ describe("/chat", () => {
     expect(res.status).toEqual(201);
     expect(res.body.success).toEqual(true);
     expect(res.body.data).toBeDefined();
-    expect(res.body.data.chat.title).toEqual("Mock Title");
-    expect(res.body.data.chat.subject).toEqual("general_knowledge");
-    expect(res.body.data.message.response).toEqual(
-      JSON.parse(mockResponse.text).response
+    expect(res.body.data.chat.title).toEqual(mockChatMetaData.response.title);
+    expect(res.body.data.chat.subject).toEqual(
+      mockChatMetaData.response.subject
+    );
+    expect(res.body.data.message.json_response.response).toEqual(
+      mockResponse.response.response
     );
   });
 

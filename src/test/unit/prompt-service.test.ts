@@ -7,7 +7,7 @@ const mockPrompt: ConvoGenParam = {
 };
 
 const mockResponse = {
-  text: "Mock Response",
+  text: JSON.stringify({ response: "Mock response" }),
   image: "",
 };
 
@@ -32,7 +32,10 @@ describe("generate prompt", () => {
     (mockLLM.invoke as jest.Mock).mockResolvedValue(mockResponse);
 
     const response = await generateResponse(mockPrompt, mockLLM);
-    expect(response).toEqual(mockResponse);
+    expect(response).toEqual({
+      response: JSON.parse(mockResponse.text),
+      image: "",
+    });
   });
 
   // With prompt and invoke fails
