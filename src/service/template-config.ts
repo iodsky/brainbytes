@@ -20,7 +20,7 @@ export type TemplateTypeConfig<T> = {
 };
 
 type GenerateTitleResponse = {
-  name: string;
+  title: string;
   subject: Subject;
 };
 
