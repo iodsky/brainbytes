@@ -37,30 +37,30 @@ export const createMessage = async (req: AuthRequest, res: Response) => {
     const messages = await Message.find({ chat: chat.id })
       .sort({ createdAt: 1 })
       .lean();
+
     const history: ConversationHistory[] = messages.map((msg) => {
       return {
         prompt: msg.prompt,
-        response: JSON.stringify(msg.response),
+        response: JSON.stringify(msg.json_response),
       };
     });
 
-    const ai = await generateResponse({
+    const promptResponse = await generateResponse({
       prompt: prompt,
       attachmentUrls: attachmentUrls,
       template: templateType,
       history: history,
     });
 
-    if (!ai) {
+    if (!promptResponse) {
       HTTPResponse.internalServerError(res, "Failed to generate response");
       return;
     }
 
-    const parsed = JSON.parse(ai.text!);
     const message = await Message.create({
       chat: chat.id,
       prompt: prompt,
-      response: parsed.response,
+      json_response: promptResponse.response,
     });
 
     if (!message) {

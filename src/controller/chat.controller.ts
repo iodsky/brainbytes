@@ -22,7 +22,7 @@ export const createChat = async (req: AuthRequest, res: Response) => {
       template: Template.GENERATE_TITLE,
     });
 
-    const chatMetaData = JSON.parse(chatMetaDataGenerator.text!);
+    const chatMetaData = chatMetaDataGenerator.response;
 
     if (!chatMetaData) {
       logger.error("Failed to generate chat metadata");
@@ -41,17 +41,16 @@ export const createChat = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const ai = await generateResponse({
+    const promptResponse = await generateResponse({
       prompt: prompt,
       attachmentUrls: attachmentUrls,
       template: templateType,
     });
 
-    const parsed = JSON.parse(ai.text!);
     const message = await Message.create({
       chat: chat.id,
       prompt: prompt,
-      response: parsed.response,
+      json_response: promptResponse.response,
     });
 
     HTTPResponse.created(res, "Chat successfully created", {
