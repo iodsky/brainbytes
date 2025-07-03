@@ -1,17 +1,18 @@
 # Define all services (containers)
 services:
   # MongoDB service
-  mongo:
+  mongodb:
     # Use official mongoDB image
     image: mongo:latest
     # Always restart unless forcibly stop the process.
     restart: unless-stopped
     ports:
       - "27017:27017"
+    # Create volume within src directory
     volumes:
-      - mongo-data:/data/db
+      - ./database/mongodb-data:/data/db
   # Backend service
-  expressjs:
+  express-server:
     # Build the docker image from the dockerfile in the current dir
     build:
       dockerfile: Dockerfile.dev
@@ -29,10 +30,7 @@ services:
 
     # Wait for mongo servvice to start
     depends_on:
-      - mongo
+      - mongodb
 
     # Override the default command and run npm start
     command: pnpm start
-
-volumes:
-  mongo-data:
