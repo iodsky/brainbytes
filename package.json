@@ -6,7 +6,9 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
-    "compose": "docker-compose up --build",
+    "compose": "docker-compose -f dev.compose.yaml up",
+    "compose:build": "docker-compose -f dev.compose.yaml up --build",
+    "compose:down": "docker-compose -f dev.compose.yaml down",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "test": "jest",
