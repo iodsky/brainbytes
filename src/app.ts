@@ -1,6 +1,5 @@
 import express from "express";
 import dotenv from "dotenv";
-import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import authRoutes from "./routes/auth.routes";
@@ -17,14 +16,6 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-if (process.env.ENABLE_CORS === "true") {
-  app.use(
-    cors({
-      origin: process.env.CLIENT_IP,
-      credentials: true,
-    })
-  );
-}
 app.use(cookieParser());
 app.use(httpLogger);
 
