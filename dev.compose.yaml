@@ -12,7 +12,7 @@ services:
     volumes:
       - ./database/mongodb-data:/data/db
   # Backend service
-  express-server:
+  expressjs:
     # Build the docker image from the dockerfile in the current dir
     build:
       dockerfile: Dockerfile.dev
