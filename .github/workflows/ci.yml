@@ -8,8 +8,36 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint:
+    name: Check Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "24.1.0"
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: "10.10.0"
+
+      - name: Install dependencies
+        working-directory: ./src
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Lint source code
+        working-directory: ./src
+        run: pnpm lint
+
   test:
     name: Run Tests
+    needs: lint
     runs-on: ubuntu-latest
     environment: GitHub actions
     env:
@@ -22,9 +50,14 @@ jobs:
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
+        with:
+          node-version: "24.1.0"
+          cache: "pnpm"
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: "10.10.0"
 
       - name: Install dependencies
         working-directory: ./src
