@@ -29,7 +29,7 @@ export const flushDB = async () => {
     const db = mongoose.connection.db;
     if (!db) throw new Error("Database connection not available");
     const collections = await db.listCollections().toArray();
-    console.log("🗑️  Flushing DB");
+    logger.info("🗑️  Flushing DB");
     for (const collection of collections) {
       await mongoose.connection.db?.dropCollection(collection.name);
     }
