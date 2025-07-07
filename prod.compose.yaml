@@ -14,7 +14,7 @@ services:
       - .env
     environment:
       - IS_DOCKERIZED=true
-      - NODE_ENV=prod
+      - NODE_ENV=production
     depends_on:
       - mongodb
     command: ["node", "dist/index.js"]
