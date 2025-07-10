@@ -5,9 +5,7 @@ services:
     volumes:
       - mongodb-data:/data/db
   expressjs:
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
+    image: ghcr.io/iodsky/brainbytes-api:latest
     ports:
       - "8000:8000"
     env_file:
