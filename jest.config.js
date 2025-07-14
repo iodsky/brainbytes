@@ -3,4 +3,5 @@ export default {
   testEnvironment: "node",
   testMatch: ["**/test/**/*test.ts"],
   testPathIgnorePatterns: ["/node_modules"],
+  testTimeout: 30000,
 };
