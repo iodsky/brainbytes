@@ -76,12 +76,10 @@ const chatSchema = new mongoose.Schema(
   }
 );
 
-chatSchema.pre("findOneAndDelete", async function (next) {
-  const chat = await this.model.findOne(this.getFilter());
-  if (chat) {
-    await Message.deleteMany({ chat: chat._id });
+chatSchema.post("findOneAndDelete", async function (doc) {
+  if (doc) {
+    await Message.deleteMany({ chat: doc._id });
   }
-  next();
 });
 
 const Chat = mongoose.model<IChat>("chat", chatSchema);

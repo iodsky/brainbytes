@@ -4,7 +4,7 @@ export interface IMessage {
   _id: mongoose.Schema.Types.ObjectId;
   chat: mongoose.Schema.Types.ObjectId;
   prompt: string;
-  response?: JSON;
+  json_response?: JSON;
   image?: string;
 }
 
@@ -20,7 +20,7 @@ const messageSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    response: {
+    json_response: {
       type: mongoose.Schema.Types.Mixed,
       required: false,
     },

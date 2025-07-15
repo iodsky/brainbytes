@@ -1,4 +1,5 @@
-import { GenAI, LLM } from "./llm-service";
+import logger from "../util/logger";
+import { ConvoGenParam, GenAI, LLM } from "./llm-service";
 import {
   Template,
   TemplateResponseMap,
@@ -10,75 +11,46 @@ export interface ConversationHistory {
   response: string;
 }
 
-class PromptService {
-  constructor() {
-    console.info("ℹ️  PromptService initialized");
-  }
-
-  build(llm?: GenAI) {
-    console.debug(
-      `ℹ️  Building PromptResponseGenerator with LLM: ${
-        llm?.constructor?.name || "Default (Gemini)"
-      }`
-    );
-    return new PromptResponseGenerator(llm || LLM.GEMINI);
-  }
+export interface PromptResponse<T extends TemplateValue> {
+  response: TemplateResponseMap[T];
+  image: string;
 }
 
-interface GenerateConversationParams {
-  userInput: string;
-  attachmentsUrls?: string[];
-  history?: ConversationHistory[];
-  template?: TemplateValue;
-}
+export async function generateResponse<T extends TemplateValue>(
+  { prompt, attachmentUrls, template, history }: ConvoGenParam,
+  llm: GenAI = LLM.GEMINI
+): Promise<PromptResponse<T>> {
+  if (!prompt) {
+    logger.warn("[prompt-service] generateResponse called without user input");
+    throw new Error("User input is required");
+  }
 
-class PromptResponseGenerator {
-  constructor(private llm: GenAI) {}
+  logger.info(`[prompt-service] generating response for prompt: ${prompt}`);
+  logger.info(
+    `[prompt-service] attachments: ${JSON.stringify(
+      attachmentUrls
+    )}, template: ${template}, history length: ${history?.length || 0}`
+  );
 
-  async generateResponse<T extends TemplateValue>({
-    userInput,
-    attachmentsUrls,
-    template,
-    history,
-  }: GenerateConversationParams) {
-    if (!userInput) {
-      console.warn(
-        "PromptResponseGenerator: generateResponse called without user input"
-      );
-      throw new Error("User input is required");
-    }
+  try {
+    const llmResponse = await llm.invoke({
+      prompt: prompt,
+      attachmentUrls: attachmentUrls ?? [],
+      template: template || Template.DEFAULT,
+      history: history || [],
+    });
 
-    console.info(
-      `[prompt-service] Generating response for user input: ${userInput}`
-    );
-    console.debug(
-      `Attachments: ${JSON.stringify(
-        attachmentsUrls
-      )}, Template: ${template}, History length: ${history?.length || 0}`
-    );
-
-    try {
-      const response = await this.llm.invoke({
-        prompt: userInput,
-        attachmentUrls: attachmentsUrls || [],
-        template: template || Template.DEFAULT,
-        history: history || [],
-      });
-
-      console.info("[prompt-service] Returning text response: ", response.text);
-      return {
-        text: response?.text,
-        image: "",
-      };
-    } catch (error) {
-      return {
-        response: JSON.parse(
-          JSON.stringify({ error: "Failed to generate response" })
-        ) as TemplateResponseMap[T],
-        image: "",
-      };
-    }
+    return {
+      response: JSON.parse(llmResponse.text),
+      image: "",
+    };
+  } catch (error) {
+    logger.error(error);
+    return {
+      response: JSON.parse(
+        JSON.stringify({ error: "Failed to generate response" })
+      ) as TemplateResponseMap[T],
+      image: "",
+    };
   }
 }
-
-export const promptService = new PromptService();

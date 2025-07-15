@@ -4,8 +4,8 @@ import { TemplateValue } from "./template-config";
 
 export interface ConvoGenParam {
   prompt: string;
-  attachmentUrls: string[];
   template: TemplateValue;
+  attachmentUrls?: string[];
   history?: ConversationHistory[];
 }
 

@@ -1,24 +1,25 @@
 import mongoose from "mongoose";
+import logger from "./logger";
 
 export const connectDB = async () => {
-  const isDockerized = process.env.IS_DOCKERIZED === "true";
+  const IS_DOCKERIZED = process.env.IS_DOCKERIZED === "true";
 
-  const mongoUri = isDockerized
-    ? process.env.MONGO_DOCKER_URI
-    : process.env.MONGO_ATLAS_URI;
+  const MONGO_URI = IS_DOCKERIZED
+    ? process.env.MONGO_URI_DOCKER
+    : process.env.MONGO_URI_ATLAS;
 
   try {
-    console.debug(
+    logger.info(
       `${
-        isDockerized
-          ? "ℹ️  Initializing local mongodb"
-          : "ℹ️  Initializing mongodb atlas"
+        IS_DOCKERIZED
+          ? "Connecting to containerized mongodb"
+          : "Connecting to mongodb atlas"
       }`
     );
-    await mongoose.connect(mongoUri!);
-    console.log("✅ Database connection established");
+    await mongoose.connect(MONGO_URI!);
+    logger.info(`Successfully connected to ${MONGO_URI}`);
   } catch (err) {
-    console.error("👎 MongoDB connection error:", err);
+    logger.error(`Error connecting to ${MONGO_URI}`, err);
     process.exit(1);
   }
 };
@@ -28,7 +29,7 @@ export const flushDB = async () => {
     const db = mongoose.connection.db;
     if (!db) throw new Error("Database connection not available");
     const collections = await db.listCollections().toArray();
-    console.log("🗑️  Flushing DB");
+    logger.info("🗑️  Flushing DB");
     for (const collection of collections) {
       await mongoose.connection.db?.dropCollection(collection.name);
     }

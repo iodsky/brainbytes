@@ -1,15 +1,21 @@
-# Use docker compose file format version 3.8
-version: "3.8"
-
 # Define all services (containers)
 services:
+  # MongoDB service
+  mongodb:
+    # Use official mongoDB image
+    image: mongo:latest
+    # Always restart unless forcibly stop the process.
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    # Create volume within src directory
+    volumes:
+      - ./database/mongodb-data:/data/db
   # Backend service
-  backend:
+  expressjs:
     # Build the docker image from the dockerfile in the current dir
-    build: .
-
-    # Set custom container name
-    container_name: brainbytes-server
+    build:
+      dockerfile: Dockerfile.dev
 
     # Map port 8000 inside the container to port 8000 on the host machine
     ports:
@@ -24,23 +30,7 @@ services:
 
     # Wait for mongo servvice to start
     depends_on:
-      - mongo
+      - mongodb
 
     # Override the default command and run npm start
     command: pnpm start
-
-  # MongoDB service
-  mongo:
-    # Use official mongoDB image
-    image: mongo:latest
-
-    container_name: brainbytes-db
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-
-    volumes:
-      - mongo-data:/data/db
-
-volumes:
-  mongo-data:

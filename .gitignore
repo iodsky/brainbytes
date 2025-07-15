@@ -1,2 +1,20 @@
+# Ignore dependencies and build outputs
 node_modules
+dist
+coverage
+
+# Ignore environment and config files
 .env
+
+# Ignore Docker files themselves (optional)
+Dockerfile
+Dockerfile.dev
+docker-compose.yml
+dev.compose.yml
+.dockerignore
+
+# Ignore local database or test assets
+database
+
+# Ignore local API testing/debugging tools like Bruno collections
+BrainBytes

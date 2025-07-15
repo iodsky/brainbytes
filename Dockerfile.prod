@@ -1,0 +1,31 @@
+# Stage 1: Build
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Copy only package files first (to cache install layers)
+COPY package.json pnpm-lock.yaml ./
+
+RUN pnpm install
+
+# Then copy rest of the source
+COPY . .
+
+RUN pnpm build
+
+# Stage 2: Run only compiled code
+FROM node:24-alpine
+
+WORKDIR /app
+
+# Copy only the necessary runtime files from the first stage into the second stage
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 8000
+
+CMD ["node", "dist/index.js"]

@@ -1,10 +1,11 @@
 import { Response } from "express";
 import { AuthRequest } from "../types/auth-request";
-import { promptService } from "../service/prompt-service";
+import { generateResponse } from "../service/prompt-service";
 import { Template, TemplateValue } from "../service/template-config";
 import Message from "../model/message.model";
 import Chat from "../model/chat.model";
 import { HTTPResponse } from "../util/http-response";
+import logger from "../util/logger";
 
 export const createChat = async (req: AuthRequest, res: Response) => {
   try {
@@ -12,25 +13,20 @@ export const createChat = async (req: AuthRequest, res: Response) => {
     const templateType: TemplateValue = template || Template.TUTOR;
 
     if (!prompt) {
-      HTTPResponse.error(res, 400, "Empty prompt");
+      HTTPResponse.badRequest(res, "Empty prompt");
       return;
     }
 
-    const chatMetaDataGenerator = await promptService.build().generateResponse({
-      userInput: String(prompt),
+    const chatMetaDataGenerator = await generateResponse({
+      prompt: String(prompt),
       template: Template.GENERATE_TITLE,
     });
 
-    console.info(
-      `AI response: ${JSON.stringify(chatMetaDataGenerator.response)}`
-    );
-
-    const chatMetaData = JSON.parse(chatMetaDataGenerator.text!);
-    console.log("Chat MetaData: ", chatMetaData);
+    const chatMetaData = chatMetaDataGenerator.response;
 
     if (!chatMetaData) {
-      console.error("Failed to generate chat metadata");
-      HTTPResponse.error(res, 500, "Failed to generate chat metadata");
+      logger.error("Failed to generate chat metadata");
+      HTTPResponse.internalServerError(res, "Failed to generate chat metadata");
       return;
     }
 
@@ -40,31 +36,34 @@ export const createChat = async (req: AuthRequest, res: Response) => {
     });
 
     if (!Chat) {
-      console.error("Failed to create Chat");
-      HTTPResponse.error(res, 500, "Failed to create chat");
+      logger.error("Failed to create Chat");
+      HTTPResponse.internalServerError(res, "Failed to create chat");
       return;
     }
 
-    const ai = await promptService.build().generateResponse({
-      userInput: prompt,
-      attachmentsUrls: attachmentUrls,
+    const promptResponse = await generateResponse({
+      prompt: prompt,
+      attachmentUrls: attachmentUrls,
       template: templateType,
     });
 
-    const parsed = JSON.parse(ai.text!);
     const message = await Message.create({
       chat: chat.id,
       prompt: prompt,
-      response: parsed.response,
+      json_response: promptResponse.response,
     });
 
-    HTTPResponse.success(res, 201, "Chat successfully created", [
-      chat,
-      message,
-    ]);
+    HTTPResponse.created(res, "Chat successfully created", {
+      chat: chat,
+      message: message,
+    });
   } catch (error) {
-    console.error(error);
-    HTTPResponse.error(res, 500, "An unexpected error has occured.", error);
+    logger.error(error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occured.",
+      error
+    );
   }
 };
 
@@ -76,10 +75,14 @@ export const getUserChat = async (req: AuthRequest, res: Response) => {
       createdAt: -1,
     });
 
-    HTTPResponse.success(res, 200, "Chat successfully retrieved", result);
+    HTTPResponse.ok(res, "Chat successfully retrieved", result);
   } catch (error) {
-    console.error(error);
-    HTTPResponse.error(res, 500, "An unexpcted error has occured", error);
+    logger.error(error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpcted error has occured",
+      error
+    );
   }
 };
 
@@ -90,20 +93,27 @@ export const deleteChat = async (req: AuthRequest, res: Response) => {
 
     const toDelete = await Chat.findById(id);
     if (!toDelete) {
-      HTTPResponse.error(res, 404, `Chat not found for id: ${id}`);
+      HTTPResponse.notFound(res, `Chat not found for id: ${id}`);
       return;
     }
 
     if (String(toDelete.user) !== userId) {
-      HTTPResponse.error(res, 401, "You are unauthorized to delete this chat");
+      HTTPResponse.unauthorized(
+        res,
+        "You are unauthorized to delete this chat"
+      );
       return;
     }
 
-    await toDelete.deleteOne();
-    HTTPResponse.success(res, 200, "Chat successfully deleted");
+    await Chat.findOneAndDelete({ _id: id });
+    HTTPResponse.ok(res, "Chat successfully deleted");
   } catch (error) {
-    console.error(error);
-    HTTPResponse.error(res, 500, "An unexpected error has occurred", error);
+    logger.error(error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occurred",
+      error
+    );
   }
 };
 
@@ -114,33 +124,37 @@ export const updateChat = async (req: AuthRequest, res: Response) => {
     const title = req.body?.title;
 
     if (!title) {
-      HTTPResponse.error(res, 400, "Please provided chat title");
+      HTTPResponse.badRequest(res, "Please provided chat title");
       return;
     }
 
     const toUpdate = await Chat.findById(id);
 
     if (!toUpdate) {
-      HTTPResponse.error(res, 404, `Chat not found for id ${id}`);
+      HTTPResponse.notFound(res, `Chat not found for id ${id}`);
       return;
     }
 
     if (String(toUpdate.user) !== userId) {
-      HTTPResponse.error(res, 401, `You are authorized to update this chat`);
+      HTTPResponse.unauthorized(res, "You are authorized to update this chat");
       return;
     }
 
     if (toUpdate.title === title) {
-      HTTPResponse.success(res, 200, `Chat details are up to date.`);
+      HTTPResponse.ok(res, "Chat details are up to date");
       return;
     }
 
     toUpdate.title = title;
     await toUpdate.save();
 
-    HTTPResponse.success(res, 200, `Chat title successfully update`, toUpdate);
+    HTTPResponse.ok(res, "Chat title successfully update", toUpdate);
   } catch (error) {
-    console.error(error);
-    HTTPResponse.error(res, 500, "An unexpected error has occurred", error);
+    logger.error(error);
+    HTTPResponse.internalServerError(
+      res,
+      "An unexpected error has occurred",
+      error
+    );
   }
 };
