@@ -4,10 +4,11 @@ services:
     restart: unless-stopped
     volumes:
       - mongodb-data:/data/db
+    networks:
+      - brainbytes_net # Shared network with expressjs
+
   expressjs:
     image: ghcr.io/iodsky/brainbytes-api:latest
-    ports:
-      - "8000:8000"
     env_file:
       - .env
     environment:
@@ -16,6 +17,43 @@ services:
     depends_on:
       - mongodb
     command: ["node", "dist/index.js"]
+    # Metadata for reverse proxy and auto-updating
+    labels:
+      # Allow traefik to route to this service
+      - "traefik.enable=true"
+      # Route requests from brainbytes.iodsky.com to this service
+      - "traefik.http.routers.brainbytes.rule=Host(`brainbytes.iodsky.com`)"
+      # Enforce HTTPS
+      - "traefik.http.routers.brainbytes.entrypoints=websecure"
+      # Automatically request TLS certificates using Let's Encrypt
+      - "traefik.http.routers.brainbytes.tls.certresolver=myresolver"
+      # Route requests to port 8000
+      - "traefik.http.services.expressjs.loadbalancer.server.port=8000"
+
+      # Enable auto updates via watchtower
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - brainbytes_net
+      - traefik # Ensure connection with traefik
+
+  watchtower:
+    image: containrrr/watchtower
+    command:
+      - "--label-enable" # Monitor contianers with explicit watchtower label
+      - "--interval=3600"
+    environment:
+      WATCHTOWER_CLEANUP: true # Remove old images after update
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    networks:
+      - brainbytes_net
 
 volumes:
   mongodb-data:
+
+networks:
+  brainbytes_net: # Project-scope network
+    name: brainbytes_net
+  traefik:
+    external: true
